@@ -18,21 +18,21 @@ export function PropertyFilters() {
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const [filters, setFilters] = useState({
-    listingType: searchParams.get('listingType') || '',
-    propertyType: searchParams.get('propertyType') || '',
-    neighborhood: searchParams.get('neighborhood') || '',
-    minPrice: searchParams.get('minPrice') || '',
-    maxPrice: searchParams.get('maxPrice') || '',
-    minRooms: searchParams.get('minRooms') || '',
-    maxRooms: searchParams.get('maxRooms') || '',
-    minSize: searchParams.get('minSize') || '',
-    maxSize: searchParams.get('maxSize') || '',
-    parking: searchParams.get('parking') === 'true',
-    elevator: searchParams.get('elevator') === 'true',
-    mamad: searchParams.get('mamad') === 'true',
-    sukka: searchParams.get('sukka') === 'true',
-    shabbatElevator: searchParams.get('shabbatElevator') === 'true',
-    airConditioning: searchParams.get('airConditioning') === 'true',
+    listingType: searchParams?.get('listingType') || '',
+    propertyType: searchParams?.get('propertyType') || '',
+    neighborhood: searchParams?.get('neighborhood') || '',
+    minPrice: searchParams?.get('minPrice') || '',
+    maxPrice: searchParams?.get('maxPrice') || '',
+    minRooms: searchParams?.get('minRooms') || '',
+    maxRooms: searchParams?.get('maxRooms') || '',
+    minSize: searchParams?.get('minSize') || '',
+    maxSize: searchParams?.get('maxSize') || '',
+    parking: searchParams?.get('parking') === 'true',
+    elevator: searchParams?.get('elevator') === 'true',
+    mamad: searchParams?.get('mamad') === 'true',
+    sukka: searchParams?.get('sukka') === 'true',
+    shabbatElevator: searchParams?.get('shabbatElevator') === 'true',
+    airConditioning: searchParams?.get('airConditioning') === 'true',
   })
 
   const handleFilterChange = (key: string, value: string | boolean) => {
