@@ -212,12 +212,17 @@ enum Neighborhood {
   SHEINFELD
   NOFEI_HASHEMESH
 
-  // Other areas
+  // Other Beit Shemesh areas
   NEVE_SHAMIR
   GIVAT_SAVION
   MEVO_BEITAR
   TZAFRIRIM
   NAHAL_SOREK
+
+  // Sde Dov (Tel Aviv) - Premium development area
+  SDE_DOV_NORTH
+  SDE_DOV_SOUTH
+  SDE_DOV_BEACHFRONT
 }
 
 enum FurnishedStatus {

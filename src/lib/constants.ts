@@ -16,6 +16,22 @@ export const NEIGHBORHOOD_NAMES: Record<string, { en: string; he: string }> = {
   MEVO_BEITAR: { en: 'Mevo Beitar', he: 'מבוא ביתר' },
   TZAFRIRIM: { en: 'Tzafririm', he: 'צפרירים' },
   NAHAL_SOREK: { en: 'Nahal Sorek', he: 'נחל שורק' },
+  // Sde Dov (Tel Aviv)
+  SDE_DOV_NORTH: { en: 'Sde Dov North', he: 'שדה דב צפון' },
+  SDE_DOV_SOUTH: { en: 'Sde Dov South', he: 'שדה דב דרום' },
+  SDE_DOV_BEACHFRONT: { en: 'Sde Dov Beachfront', he: 'שדה דב חוף הים' },
+}
+
+// Sde Dov specific neighborhoods
+export const SDE_DOV_NEIGHBORHOODS = [
+  'SDE_DOV_NORTH',
+  'SDE_DOV_SOUTH',
+  'SDE_DOV_BEACHFRONT',
+]
+
+// Check if a neighborhood is in Sde Dov
+export function isSdeDovNeighborhood(neighborhood: string): boolean {
+  return SDE_DOV_NEIGHBORHOODS.includes(neighborhood)
 }
 
 // Property type display names

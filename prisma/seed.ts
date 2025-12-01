@@ -17,6 +17,10 @@ const streetsByNeighborhood: Record<string, string[]> = {
   NEVE_SHAMIR: ['Rechov HaShaked', 'Rechov HaEgoz', 'Rechov HaTapuach'],
   GIVAT_SAVION: ['Rechov HaTzuk', 'Rechov HaGiva', 'Rechov HaNof'],
   NOFEI_HASHEMESH: ['Rechov Maalot HaShemesh', 'Rechov Ohr HaShemesh', 'Rechov Zricha'],
+  // Sde Dov (Tel Aviv) - Premium development
+  SDE_DOV_NORTH: ['Sderot Nordau', 'Rechov HaYarkon', 'Rechov Ben Yehuda', 'Rechov Dizengoff'],
+  SDE_DOV_SOUTH: ['Rechov Arlozorov', 'Sderot Rokach', 'Rechov Pinkas', 'Rechov Weizmann'],
+  SDE_DOV_BEACHFRONT: ['Tayelet Tel Aviv', 'Rechov HaYam', 'Kikar HaMedina', 'Rechov HaChof'],
 }
 
 // Realistic property descriptions
@@ -39,6 +43,22 @@ const rentalDescriptions = [
   'Short-term rental available (6-12 months). Fully equipped kitchen, comfortable bedrooms, and a welcoming living space. Perfect for olim or those in transition.',
 ]
 
+// Sde Dov specific descriptions (Tel Aviv premium)
+const sdeDovSaleDescriptions = [
+  'Stunning new development in Tel Aviv\'s most exciting neighborhood. Floor-to-ceiling windows with breathtaking Mediterranean sea views. Smart home features throughout.',
+  'Luxury penthouse in the heart of Sde Dov with private rooftop terrace. State-of-the-art finishes, Italian kitchen, and panoramic city views. Steps from the beach.',
+  'Brand new apartment in premium high-rise tower. Resort-style amenities including pool, gym, and concierge. Direct beach access and underground parking.',
+  'Architect-designed apartment with open floor plan and designer finishes. Minutes from Tel Aviv\'s best restaurants, galleries, and nightlife.',
+  'Investment opportunity in Tel Aviv\'s newest neighborhood. Projected high appreciation with first residents moving in soon. Pre-construction pricing available.',
+  'Beachfront living at its finest. Wake up to stunning sunrises over the Mediterranean. Walking distance to parks, cafes, and the vibrant Tel Aviv promenade.',
+]
+
+const sdeDovRentalDescriptions = [
+  'Fully furnished luxury apartment with sea views. Doorman building with 24/7 security. Perfect for executives or diplomats.',
+  'Modern apartment in new tower with all amenities. Short or long-term lease available. Includes gym access and parking.',
+  'Stunning beachfront rental with balcony overlooking the Mediterranean. Fully equipped for comfortable living.',
+]
+
 // Generate realistic properties
 async function generateProperties() {
   const properties = []
@@ -46,8 +66,8 @@ async function generateProperties() {
   const neighborhoods = Object.keys(streetsByNeighborhood)
   const propertyTypes = ['APARTMENT', 'PENTHOUSE', 'GARDEN_APARTMENT', 'DUPLEX', 'COTTAGE', 'VILLA']
 
-  // Generate 50 properties across different neighborhoods
-  for (let i = 0; i < 50; i++) {
+  // Generate 65 properties across different neighborhoods (including Sde Dov Tel Aviv)
+  for (let i = 0; i < 65; i++) {
     const neighborhood = neighborhoods[Math.floor(Math.random() * neighborhoods.length)]
     const streets = streetsByNeighborhood[neighborhood]
     const street = streets[Math.floor(Math.random() * streets.length)]
@@ -98,9 +118,21 @@ async function generateProperties() {
     if (propertyType === 'COTTAGE') sizeSqm += 50
     if (propertyType === 'GARDEN_APARTMENT') sizeSqm += 30
 
-    // Price calculation - realistic Beit Shemesh prices (2024)
+    // Check if Sde Dov neighborhood
+    const isSdeDov = neighborhood.includes('SDE_DOV')
+
+    // Price calculation - realistic prices (2024)
     let pricePerSqm = 0
-    if (neighborhood.includes('GIMMEL') || neighborhood.includes('DALED') || neighborhood.includes('HEY')) {
+    if (isSdeDov) {
+      // Sde Dov (Tel Aviv) - Premium pricing
+      if (neighborhood === 'SDE_DOV_BEACHFRONT') {
+        pricePerSqm = 75000 + Math.floor(Math.random() * 25000) // Beachfront: 75,000-100,000/sqm
+      } else if (neighborhood === 'SDE_DOV_NORTH') {
+        pricePerSqm = 55000 + Math.floor(Math.random() * 15000) // North: 55,000-70,000/sqm
+      } else {
+        pricePerSqm = 60000 + Math.floor(Math.random() * 20000) // South: 60,000-80,000/sqm
+      }
+    } else if (neighborhood.includes('GIMMEL') || neighborhood.includes('DALED') || neighborhood.includes('HEY')) {
       pricePerSqm = 22000 + Math.floor(Math.random() * 5000) // Newer areas: 22,000-27,000/sqm
     } else if (neighborhood === 'NEVE_SHAMIR' || neighborhood === 'GIVAT_SAVION') {
       pricePerSqm = 25000 + Math.floor(Math.random() * 8000) // Premium areas: 25,000-33,000/sqm
@@ -116,9 +148,14 @@ async function generateProperties() {
     if (isSale) {
       price = Math.round((sizeSqm * pricePerSqm) / 10000) * 10000 // Round to nearest 10,000
     } else {
-      // Rental prices
-      const baseRent = rooms * 1200
-      price = Math.round(baseRent / 100) * 100 + Math.floor(Math.random() * 5) * 100
+      // Rental prices - Sde Dov is much higher than Beit Shemesh
+      if (isSdeDov) {
+        const baseRent = rooms * 4500 // Tel Aviv premium rentals
+        price = Math.round(baseRent / 100) * 100 + Math.floor(Math.random() * 10) * 100
+      } else {
+        const baseRent = rooms * 1200
+        price = Math.round(baseRent / 100) * 100 + Math.floor(Math.random() * 5) * 100
+      }
     }
 
     // Floor calculation
@@ -135,12 +172,26 @@ async function generateProperties() {
     const hasAC = Math.random() > 0.3
     const hasShabbatElevator = hasElevator && Math.random() > 0.4
 
-    const title = `${rooms}-Room ${propertyType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())} in ${neighborhood.replace(/_/g, ' ')}`
-    const titleHe = `דירת ${rooms} חדרים ב${neighborhood.replace(/_/g, ' ')}`
+    // Different titles/descriptions for Sde Dov vs Beit Shemesh
+    const neighborhoodDisplay = neighborhood.replace(/_/g, ' ')
+    const title = isSdeDov
+      ? `${rooms}-Room ${propertyType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())} in ${neighborhoodDisplay}, Tel Aviv`
+      : `${rooms}-Room ${propertyType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())} in ${neighborhoodDisplay}`
+    const titleHe = isSdeDov
+      ? `דירת ${rooms} חדרים ב${neighborhoodDisplay}, תל אביב`
+      : `דירת ${rooms} חדרים ב${neighborhoodDisplay}`
 
-    const description = isSale
-      ? saleDescriptions[Math.floor(Math.random() * saleDescriptions.length)]
-      : rentalDescriptions[Math.floor(Math.random() * rentalDescriptions.length)]
+    // Use Sde Dov specific descriptions for Tel Aviv properties
+    let description: string
+    if (isSdeDov) {
+      description = isSale
+        ? sdeDovSaleDescriptions[Math.floor(Math.random() * sdeDovSaleDescriptions.length)]
+        : sdeDovRentalDescriptions[Math.floor(Math.random() * sdeDovRentalDescriptions.length)]
+    } else {
+      description = isSale
+        ? saleDescriptions[Math.floor(Math.random() * saleDescriptions.length)]
+        : rentalDescriptions[Math.floor(Math.random() * rentalDescriptions.length)]
+    }
 
     // Map furnished status to schema enum
     const furnishedStatus = isSale
@@ -158,8 +209,12 @@ async function generateProperties() {
       status: 'ACTIVE',
       price,
       neighborhood,
-      address: `${street} ${houseNumber}/${apartmentNumber}, Beit Shemesh`,
-      addressHe: `${street} ${houseNumber}/${apartmentNumber}, בית שמש`,
+      address: isSdeDov
+        ? `${street} ${houseNumber}/${apartmentNumber}, Tel Aviv`
+        : `${street} ${houseNumber}/${apartmentNumber}, Beit Shemesh`,
+      addressHe: isSdeDov
+        ? `${street} ${houseNumber}/${apartmentNumber}, תל אביב`
+        : `${street} ${houseNumber}/${apartmentNumber}, בית שמש`,
       floor,
       totalFloors,
       rooms,

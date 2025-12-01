@@ -2,17 +2,17 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, Home, Calculator, FileText, User, Phone } from 'lucide-react'
+import { Menu, X, Home, Calculator, FileText, User, Phone, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navigation = [
-    { name: 'Properties', href: '/properties', icon: Home },
-    { name: 'Cost Calculator', href: '/calculator', icon: Calculator },
+    { name: 'Beit Shemesh', href: '/properties', icon: Home },
+    { name: 'Sde Dov', href: '/sde-dov', icon: Building2, highlight: true },
+    { name: 'Calculator', href: '/calculator', icon: Calculator },
     { name: 'Documents', href: '/documents', icon: FileText },
-    { name: 'About', href: '/about', icon: User },
     { name: 'Contact', href: '/contact', icon: Phone },
   ]
 
@@ -32,12 +32,16 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
+                className={`font-medium transition-colors ${
+                  item.highlight
+                    ? 'text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full'
+                    : 'text-gray-600 hover:text-teal-600'
+                }`}
               >
                 {item.name}
               </Link>
