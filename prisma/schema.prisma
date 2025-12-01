@@ -1,0 +1,436 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ============ AUTHENTICATION ============
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  password      String?
+  image         String?
+  role          UserRole  @default(USER)
+  emailVerified DateTime?
+
+  // Profile details
+  preferredLanguage String @default("en") // en, he
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  savedListings SavedListing[]
+  inquiries     Inquiry[]
+  documents     Document[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum UserRole {
+  USER
+  AGENT
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============ PROPERTIES ============
+
+model Property {
+  id              String   @id @default(cuid())
+
+  // Basic Info
+  title           String
+  titleHe         String?  // Hebrew title
+  description     String
+  descriptionHe   String?  // Hebrew description
+
+  // Type & Status
+  listingType     ListingType
+  propertyType    PropertyType
+  status          ListingStatus @default(ACTIVE)
+
+  // Location
+  neighborhood    Neighborhood
+  address         String
+  addressHe       String?
+  floor           Int?
+  totalFloors     Int?
+
+  // Pricing
+  price           Float
+  pricePerMeter   Float?
+  arnona          Float?   // Municipal tax
+  vaadBayit       Float?   // Building maintenance
+
+  // Size & Rooms
+  sizeSqm         Float
+  rooms           Float    // Can be 3.5, 4, etc.
+  bedrooms        Int
+  bathrooms       Float
+  balconies       Int      @default(0)
+
+  // Features
+  parking         Int      @default(0)
+  storage         Boolean  @default(false)
+  elevator        Boolean  @default(false)
+  airConditioning Boolean  @default(false)
+  sukka           Boolean  @default(false)  // Sukkah balcony
+  mamad           Boolean  @default(false)  // Safe room
+  garden          Boolean  @default(false)
+  rooftop         Boolean  @default(false)
+  furnished       FurnishedStatus @default(UNFURNISHED)
+  renovated       Boolean  @default(false)
+  yearBuilt       Int?
+
+  // Kosher Kitchen
+  kosherKitchen   Boolean  @default(true)
+  separateSink    Boolean  @default(false)
+
+  // Building Info
+  buildingType    BuildingType?
+  accessibleBuilding Boolean @default(false)
+  shabbatElevator Boolean  @default(false)
+
+  // Media
+  images          PropertyImage[]
+  virtualTourUrl  String?
+
+  // Agent/Owner
+  contactName     String
+  contactPhone    String
+  contactEmail    String?
+  isOwnerListing  Boolean  @default(false)
+
+  // Relations
+  savedBy         SavedListing[]
+  inquiries       Inquiry[]
+  costCalculations CostCalculation[]
+
+  // SEO
+  slug            String   @unique
+
+  // Timestamps
+  availableFrom   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime?
+
+  @@index([neighborhood])
+  @@index([listingType])
+  @@index([propertyType])
+  @@index([status])
+  @@index([price])
+}
+
+model PropertyImage {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url         String
+  caption     String?
+  captionHe   String?
+  order       Int      @default(0)
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+enum ListingType {
+  SALE
+  RENT
+  SHORT_TERM  // Vacation/temporary
+}
+
+enum PropertyType {
+  APARTMENT
+  PENTHOUSE
+  GARDEN_APARTMENT
+  DUPLEX
+  COTTAGE      // Israeli cottage/rowhouse
+  VILLA
+  TOWNHOUSE
+  STUDIO
+  ROOM         // Single room rental
+  COMMERCIAL
+  LAND
+}
+
+enum ListingStatus {
+  ACTIVE
+  PENDING      // Under negotiation
+  SOLD
+  RENTED
+  EXPIRED
+  DRAFT
+}
+
+enum Neighborhood {
+  // Ramat Beit Shemesh
+  RBS_ALEPH
+  RBS_BET
+  RBS_GIMMEL_1
+  RBS_GIMMEL_2
+  RBS_GIMMEL_3
+  RBS_DALED
+  RBS_HEY
+
+  // Old Beit Shemesh
+  OLD_BS_CENTER
+  OLD_BS_NORTH
+  SHEINFELD
+  NOFEI_HASHEMESH
+
+  // Other areas
+  NEVE_SHAMIR
+  GIVAT_SAVION
+  MEVO_BEITAR
+  TZAFRIRIM
+  NAHAL_SOREK
+}
+
+enum FurnishedStatus {
+  UNFURNISHED
+  PARTIAL
+  FULLY_FURNISHED
+}
+
+enum BuildingType {
+  NEW_CONSTRUCTION
+  RESALE
+  TAMA_38         // Seismic renovation
+  PINUI_BINUI     // Urban renewal
+}
+
+// ============ USER INTERACTIONS ============
+
+model SavedListing {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
+
+model Inquiry {
+  id          String       @id @default(cuid())
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  propertyId  String
+  property    Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  name        String
+  email       String
+  phone       String
+  message     String
+
+  status      InquiryStatus @default(NEW)
+  response    String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  SCHEDULED
+  CLOSED
+}
+
+// ============ COST CALCULATOR ============
+
+model CostCalculation {
+  id            String   @id @default(cuid())
+  propertyId    String?
+  property      Property? @relation(fields: [propertyId], references: [id])
+
+  calculationType CalculationType
+
+  // Input values
+  propertyPrice Float
+  isFirstHome   Boolean  @default(false)
+  isNewOleh     Boolean  @default(false)
+
+  // Purchase costs breakdown
+  purchaseTax   Float?   // Mas Rechisha
+  lawyerFees    Float?
+  agentFees     Float?
+  mortgageFees  Float?
+  appraisalFees Float?
+  registrationFees Float?
+  movingCosts   Float?
+  renovationBudget Float?
+
+  // Rental analysis
+  monthlyRent   Float?
+  leasePeriod   Int?     // months
+  depositMonths Int?
+
+  // Mortgage details
+  mortgageAmount Float?
+  interestRate  Float?
+  loanTermYears Int?
+  monthlyPayment Float?
+
+  // Results
+  totalCosts    Float
+  notes         String?
+
+  createdAt     DateTime @default(now())
+}
+
+enum CalculationType {
+  PURCHASE
+  RENTAL
+  INVESTMENT
+  MORTGAGE
+}
+
+// ============ LEGAL DOCUMENTS ============
+
+model Document {
+  id            String       @id @default(cuid())
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+
+  documentType  DocumentType
+  status        DocumentStatus @default(DRAFT)
+
+  // Parties
+  partyAName    String
+  partyAId      String?      // Teudat Zehut
+  partyAPhone   String?
+  partyAEmail   String?
+  partyAAddress String?
+
+  partyBName    String?
+  partyBId      String?
+  partyBPhone   String?
+  partyBEmail   String?
+  partyBAddress String?
+
+  // Property details
+  propertyAddress String
+  propertyDetails String?
+
+  // Terms
+  price         Float?
+  startDate     DateTime?
+  endDate       DateTime?
+  paymentTerms  String?
+  specialTerms  String?
+
+  // Generated document
+  content       String?      // HTML content
+  contentHe     String?      // Hebrew version
+  pdfUrl        String?
+
+  // Signatures
+  partyASigned  DateTime?
+  partyBSigned  DateTime?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+enum DocumentType {
+  RENTAL_AGREEMENT
+  PURCHASE_OFFER
+  PURCHASE_CONTRACT
+  TENANT_APPLICATION
+  PROPERTY_DISCLOSURE
+  INSPECTION_CHECKLIST
+  POWER_OF_ATTORNEY
+  RENTAL_TERMINATION
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  SIGNED
+  CANCELLED
+  EXPIRED
+}
+
+// ============ ANALYTICS ============
+
+model PageView {
+  id          String   @id @default(cuid())
+  propertyId  String?
+  page        String
+  referrer    String?
+  userAgent   String?
+  ipHash      String?  // Hashed IP for privacy
+  createdAt   DateTime @default(now())
+
+  @@index([propertyId])
+  @@index([createdAt])
+}
+
+// ============ SITE CONTENT ============
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  titleHe     String?
+  slug        String   @unique
+  content     String
+  contentHe   String?
+  excerpt     String?
+  excerptHe   String?
+  coverImage  String?
+  published   Boolean  @default(false)
+  category    String?
+  tags        String?
+  authorName  String   @default("Sarah Rakshah")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  content     String
+  contentHe   String?
+  rating      Int      @default(5)
+  location    String?
+  image       String?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
