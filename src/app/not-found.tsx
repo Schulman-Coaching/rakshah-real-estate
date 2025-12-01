@@ -1,4 +1,4 @@
-import Link from 'next/link'
+export const dynamic = 'force-dynamic'
 
 export default function NotFound() {
   return (
@@ -11,18 +11,18 @@ export default function NotFound() {
           It might have been moved or doesn&apos;t exist.
         </p>
         <div className="mt-8 flex gap-4 justify-center">
-          <Link
+          <a
             href="/"
             className="px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
           >
             Go Home
-          </Link>
-          <Link
+          </a>
+          <a
             href="/properties"
             className="px-6 py-3 border border-teal-600 text-teal-600 rounded-lg font-medium hover:bg-teal-50 transition-colors"
           >
             Browse Properties
-          </Link>
+          </a>
         </div>
       </div>
     </div>

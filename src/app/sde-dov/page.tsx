@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   MapPin,
   Building2,
@@ -14,9 +13,10 @@ import {
 } from 'lucide-react'
 import { prisma } from '@/lib/db'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { PropertyGrid } from '@/components/properties/PropertyGrid'
-import { SDE_DOV_NEIGHBORHOODS, NEIGHBORHOOD_NAMES } from '@/lib/constants'
+import { SDE_DOV_NEIGHBORHOODS } from '@/lib/constants'
+import type { Neighborhood } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +24,7 @@ async function getSdeDovProperties() {
   const properties = await prisma.property.findMany({
     where: {
       neighborhood: {
-        in: SDE_DOV_NEIGHBORHOODS as any,
+        in: SDE_DOV_NEIGHBORHOODS as Neighborhood[],
       },
       status: 'ACTIVE',
     },
@@ -184,7 +184,7 @@ export default async function SdeDovPage() {
                   Family-oriented neighborhood with excellent schools, parks, and community centers.
                 </p>
                 <Link href="/properties?neighborhood=SDE_DOV_NORTH">
-                  <Button variant="secondary" size="sm">
+                  <Button variant="outline" size="sm">
                     View Properties
                   </Button>
                 </Link>
@@ -198,7 +198,7 @@ export default async function SdeDovPage() {
                   Urban living at its finest with high-rise towers, shopping, and entertainment.
                 </p>
                 <Link href="/properties?neighborhood=SDE_DOV_SOUTH">
-                  <Button variant="secondary" size="sm">
+                  <Button variant="outline" size="sm">
                     View Properties
                   </Button>
                 </Link>
@@ -212,7 +212,7 @@ export default async function SdeDovPage() {
                   Premium properties with stunning Mediterranean views and beach access.
                 </p>
                 <Link href="/properties?neighborhood=SDE_DOV_BEACHFRONT">
-                  <Button variant="secondary" size="sm">
+                  <Button variant="outline" size="sm">
                     View Properties
                   </Button>
                 </Link>
