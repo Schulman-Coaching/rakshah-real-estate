@@ -27,6 +27,7 @@ import {
 import { prisma } from '@/lib/db'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ContactForm } from '@/components/properties/ContactForm'
 import {
   NEIGHBORHOOD_NAMES,
   PROPERTY_TYPE_NAMES,
@@ -386,6 +387,9 @@ export default async function PropertyDetailPage({
                   </CardContent>
                 </Card>
               )}
+
+              {/* Contact Form */}
+              <ContactForm propertyId={property.id} propertyTitle={property.title} />
 
               {/* Cost Calculator Link */}
               <Card className="bg-teal-50 border-teal-200">
